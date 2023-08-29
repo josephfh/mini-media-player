@@ -16,6 +16,7 @@ class MiniMediaPlayerPowerstrip extends LitElement {
       player: {},
       config: {},
       groupVisible: Boolean,
+      sourceListVisible: Boolean,
       idle: Boolean,
     };
   }
@@ -48,10 +49,6 @@ class MiniMediaPlayerPowerstrip extends LitElement {
     return this.player.isActive && this.config.hide.controls !== this.config.hide.volume;
   }
 
-  get hasSource() {
-    return this.player.sources.length > 0 && !this.config.hide.source;
-  }
-
   get hasSoundMode() {
     return this.player.soundModes.length > 0 && !this.config.hide.sound_mode;
   }
@@ -71,10 +68,6 @@ class MiniMediaPlayerPowerstrip extends LitElement {
       ${this.hasControls
         ? html` <mmp-media-controls .player=${this.player} .config=${this.config}> </mmp-media-controls> `
         : ''}
-      ${this.hasSource
-        ? html` <mmp-source-menu .player=${this.player} .icon=${this.sourceSize} ?full=${this.config.source === 'full'}>
-          </mmp-source-menu>`
-        : ''}
       ${this.hasSoundMode
         ? html` <mmp-sound-menu
             .player=${this.player}
@@ -83,6 +76,14 @@ class MiniMediaPlayerPowerstrip extends LitElement {
           >
           </mmp-sound-menu>`
         : ''}
+      <ha-icon-button
+        class="source-button"
+        .icon=${ICON.SOURCE}
+        ?color=${this.sourceListVisible}
+        @click=${this.handleSourceClick}
+      >
+        <ha-icon .icon=${ICON.SOURCE}></ha-icon>
+      </ha-icon-button>
       ${this.showGroupButton
         ? html` <ha-icon-button
             class="group-button"
@@ -98,7 +99,10 @@ class MiniMediaPlayerPowerstrip extends LitElement {
         ? html` <ha-icon-button
             class="power-button"
             .icon=${ICON.POWER}
-            @click=${(e) => this.player.toggle(e)}
+            @click=${(e) => {
+                this.player.toggle(e);
+                this.closeSourceList();
+            }}
             ?color=${this.powerColor}
           >
             <ha-icon .icon=${ICON.POWER}></ha-icon>
@@ -110,6 +114,15 @@ class MiniMediaPlayerPowerstrip extends LitElement {
   handleGroupClick(ev) {
     ev.stopPropagation();
     this.dispatchEvent(new CustomEvent('toggleGroupList'));
+  }
+
+  handleSourceClick(ev) {
+    ev.stopPropagation();
+    this.dispatchEvent(new CustomEvent('toggleSourceList'));
+  }
+
+  closeSourceList() {
+    this.dispatchEvent(new CustomEvent('closeSourceList'));
   }
 
   get renderIdleView() {

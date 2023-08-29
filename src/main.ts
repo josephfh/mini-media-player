@@ -18,7 +18,6 @@ import { generateConfig } from './config/config';
 import MediaPlayerObject from './model';
 import style from './style';
 import sharedStyle from './sharedStyle';
-import handleClick from './utils/handleClick';
 import colorsFromPicture from './utils/colorGenerator';
 
 import './ensureComponents';
@@ -29,6 +28,7 @@ import './components/shortcuts';
 import './components/tts';
 import './components/progress';
 import './components/powerstrip';
+import './components/sourceList';
 import './components/mediaControls';
 
 import { ICON, UPDATE_PROPS, BREAKPOINT } from './const';
@@ -43,6 +43,7 @@ class MiniMediaPlayer extends LitElement {
   set hass(hass) {
     if (!hass) return;
     const entity = hass.states[this.config.entity] as MediaPlayerEntity;
+    const history = hass.states['input_select.music_source_history'] as any;
     this._hass = hass;
     if (entity && this.entity !== entity) {
       this.entity = entity;
@@ -50,6 +51,9 @@ class MiniMediaPlayer extends LitElement {
       this.rtl = this.computeRTL(hass);
       this.idle = this.player.idle;
       if (this.player.trackIdle) this.updateIdleStatus();
+    }
+    if (history && this.history !== history) {
+      this.history = history;
     }
     if (this.config && this.config.speaker_group && this.config.speaker_group.group_mgmt_entity) {
       const altPlayer = hass.states[this.config.speaker_group.group_mgmt_entity] as MediaPlayerEntity;
@@ -70,6 +74,7 @@ class MiniMediaPlayer extends LitElement {
   @state() private thumbnail = '';
   @state() private prevThumbnail = '';
   @state() private edit = false;
+  @state() private showSourceList = false;
   @state() private rtl = false;
   @state() private cardHeight = 0;
   @state() private foregroundColor = '';
@@ -78,6 +83,7 @@ class MiniMediaPlayer extends LitElement {
   @state() private config!: MiniMediaPlayerConfiguration;
   @state() private _hass!: HomeAssistant;
   @state() private entity?: MediaPlayerEntity;
+  @state() private history?: any;
   @state() private player!: MediaPlayerObject;
   @state() private idle!: boolean;
   @state() private groupMgmtPlayer?: MediaPlayerObject;
@@ -164,21 +170,31 @@ class MiniMediaPlayer extends LitElement {
       <ha-card
         class=${this.computeClasses()}
         style=${this.computeStyles()}
-        @click=${(e) => this.handlePopup(e)}
         artwork=${config.artwork}
         content=${this.player.content}
       >
         <div class="mmp__bg">${this.renderBackground()} ${this.renderArtwork()} ${this.renderGradient()}</div>
         <div class="mmp-player">
+          <mmp-source-list
+            @closeSourceList=${this.closeSourceList}
+            .history=${this.history}
+            .player=${this.player}
+            .isOpen=${this.showSourceList}
+            .closeIcon=${ICON.CLOSE}
+          >
+          </mmp-source-list>
           <div class="mmp-player__core flex" ?inactive=${this.player.idle}>
             ${this.renderIcon()}
             <div class="entity__info">${this.renderEntityName()} ${this.renderMediaInfo()}</div>
             <mmp-powerstrip
+              @closeSourceList=${this.closeSourceList}
               @toggleGroupList=${this.toggleGroupList}
+              @toggleSourceList=${this.toggleSourceList}
               .hass=${this.hass}
               .player=${this.player}
               .config=${config}
               .groupVisible=${this.edit}
+              .sourceListVisible=${this.showSourceList}
               .idle=${this.idle}
               ?flow=${config.flow}
             >
@@ -275,11 +291,6 @@ class MiniMediaPlayer extends LitElement {
     `;
   }
 
-  handlePopup(e: MouseEvent) {
-    e.stopPropagation();
-    handleClick(this, this._hass, this.config, this.config.tap_action, this.player.id);
-  }
-
   renderIcon(): TemplateResult | undefined {
     if (this.config.hide.icon) return;
     if (this.player.isActive && this.thumbnail && this.config.artwork === 'default') {
@@ -298,7 +309,7 @@ class MiniMediaPlayer extends LitElement {
         <img src="${this.config.icon_image}" height="100%" />
       </div>`;
     }
-
+    return html``
     const active = !this.config.hide.icon_state && this.player.isActive;
     return html` <div class="entity__icon" ?color=${active}>
       <ha-icon .icon=${this.computeIcon()}></ha-icon>
@@ -411,6 +422,14 @@ class MiniMediaPlayer extends LitElement {
 
   toggleGroupList(): void {
     this.edit = !this.edit;
+  }
+
+  closeSourceList(): void {
+    this.showSourceList = false;
+  }
+
+  toggleSourceList(): void {
+    this.showSourceList = !this.showSourceList;
   }
 
   updateIdleStatus(): void {

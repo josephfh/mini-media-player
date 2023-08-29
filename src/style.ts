@@ -80,9 +80,6 @@ const style = css`
     --mmp-progress-height: var(--mini-media-player-progress-height, 4px);
     --mmp-border-radius: 0px
   }
-  ha-card.--more-info {
-    cursor: pointer;
-  }
   .mmp__bg,
   .mmp-player,
   .mmp__container {
@@ -198,7 +195,7 @@ const style = css`
     opacity: 1;
   }
   ha-card[artwork*='full-cover'].--has-artwork .mmp-player {
-    background: linear-gradient(to top, var(--mmp-overlay-color) var(--mmp-overlay-color-stop), transparent 100%);
+    background: linear-gradient(to top, rgba(0,0,0,.75) var(--mmp-overlay-color-stop), transparent 100%);
     border-bottom-left-radius: var(--ha-card-border-radius, 0);
     border-bottom-right-radius: var(--ha-card-border-radius, 0);
   }
@@ -369,7 +366,6 @@ const style = css`
     display: none;
   }
   .mmp-player__adds {
-    margin-left: calc(var(--mmp-unit) * 1.2);
     position: relative;
   }
   ha-card.--rtl .mmp-player__adds {

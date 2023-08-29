@@ -29,6 +29,7 @@ const REPEAT_STATE = {
 };
 
 const ICON = {
+  CLOSE: 'mdi:close',
   DEFAULT: 'mdi:cast',
   DROPDOWN: 'mdi:chevron-down',
   GROUP: 'mdi:speaker-multiple',
@@ -46,6 +47,7 @@ const ICON = {
   PREV: 'mdi:skip-previous',
   SEND: 'mdi:send',
   SHUFFLE: 'mdi:shuffle',
+  SOURCE: 'mdi:disc',
   REPEAT: {
     [REPEAT_STATE.OFF]: 'mdi:repeat-off',
     [REPEAT_STATE.ONE]: 'mdi:repeat-once',
@@ -69,6 +71,7 @@ const UPDATE_PROPS = [
   'thumbnail',
   'prevThumbnail',
   'edit',
+  'showSourceList',
   'idle',
   'cardHeight',
   'backgroundColor',
